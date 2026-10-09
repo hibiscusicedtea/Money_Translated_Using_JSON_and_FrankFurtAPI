@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f4f5f1" />
+  <title>Change — Currency Converter</title>
+  <style>
+    :root {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #15241e;
+      background: #f4f5f1;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --ink: #15241e;
+      --muted: #66726b;
+      --green: #b9f36b;
+      --line: #e4e8e1;
+      --surface: #fff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, input, select { font: inherit; }
+    button, select { cursor: pointer; }
+    .shell { width: min(1100px, calc(100% - 40px)); margin: 0 auto; }
+    .topbar { height: 76px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-size: 19px; font-weight: 760; letter-spacing: -.05em; }
+    .brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; background: var(--green); font-size: 18px; }
+    .top-label { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+    main { padding: 68px 0 42px; }
+    .intro { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 30px; }
+    .eyebrow { margin: 0 0 14px; color: #58705e; font-size: 11px; font-weight: 750; letter-spacing: .15em; text-transform: uppercase; }
+    h1 { max-width: 610px; margin: 0; font-size: clamp(38px, 6vw, 66px); line-height: .99; letter-spacing: -.07em; }
+    .intro-copy { max-width: 255px; margin: 0 0 5px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .converter { padding: 28px; border: 1px solid #e8ebe5; border-radius: 24px; background: var(--surface); box-shadow: 0 18px 55px rgb(25 42 32 / 6%); }
+    .converter-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 21px; }
+    .converter-head h2 { margin: 0; font-size: 16px; letter-spacing: -.025em; }
+    .live { display: inline-flex; align-items: center; gap: 8px; color: #56665b; font-size: 12px; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #58b77b; box-shadow: 0 0 0 3px #e6f6e9; }
+    .money-row { display: grid; grid-template-columns: 1fr 44px 1fr; align-items: center; gap: 14px; }
+    .money-box { min-width: 0; padding: 18px 18px 16px; border: 1px solid var(--line); border-radius: 16px; background: #fbfcfa; transition: border-color .18s, box-shadow .18s; }
+    .money-box:focus-within { border-color: #8da98e; box-shadow: 0 0 0 3px rgb(105 145 111 / 11%); }
+    .field-label { display: block; margin-bottom: 15px; color: var(--muted); font-size: 12px; font-weight: 600; }
+    .input-line { display: flex; align-items: center; gap: 10px; }
+    .amount-input { width: 100%; min-width: 0; padding: 0; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: clamp(25px, 4vw, 38px); font-weight: 650; letter-spacing: -.055em; }
+    .amount-input::placeholder { color: #a2aaa4; }
+    .currency-select { max-width: 136px; padding: 10px 31px 10px 10px; border: 1px solid #dce1d9; border-radius: 10px; outline-color: #75967d; color: var(--ink); background-color: white; font-size: 13px; font-weight: 700; }
+    .currency-name { display: block; margin-top: 9px; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .swap-button { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); background: #fff; transition: transform .2s, background .2s; }
+    .swap-button:hover { transform: rotate(180deg); background: #f4f8f1; }
+    .swap-button svg { width: 17px; height: 17px; }
+    .rate-strip { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 18px; padding: 14px 2px 0; border-top: 1px solid var(--line); }
+    .rate-text { color: var(--muted); font-size: 12px; }
+    .rate-text strong { color: var(--ink); font-weight: 650; }
+    .rate-date { color: #7c8780; font-size: 11px; }
+    .actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 23px; }
+    .json-button { padding: 10px 0; border: 0; color: #465a4b; background: transparent; font-size: 12px; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
+    .refresh-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 20px; border: 0; border-radius: 12px; color: #16251c; background: var(--green); font-size: 13px; font-weight: 750; transition: background .2s, transform .2s; }
+    .refresh-button:hover { transform: translateY(-1px); background: #a9e85a; }
+    .refresh-button:disabled { cursor: wait; opacity: .7; }
+    .refresh-button svg { width: 15px; height: 15px; }
+    .section-row { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 36px 0 13px; }
+    .section-row h2 { margin: 0; font-size: 15px; letter-spacing: -.02em; }
+    .section-row p { margin: 0; color: var(--muted); font-size: 11px; }
+    .pair-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .pair-card { display: flex; flex-direction: column; gap: 7px; padding: 15px; border: 1px solid var(--line); border-radius: 14px; color: inherit; background: #fff; text-align: left; transition: transform .2s, border-color .2s; }
+    .pair-card:hover { transform: translateY(-2px); border-color: #bdcbbd; }
+    .pair-codes { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+    .pair-rate { font-size: 17px; font-weight: 700; letter-spacing: -.04em; }
+    .pair-caption { color: #818c84; font-size: 10px; }
+    .status { min-height: 20px; margin: 14px 0 0; color: #637167; font-size: 12px; }
+    .status.error { color: #a73e3e; }
+    .json-panel { margin-top: 14px; padding: 18px; border-radius: 14px; background: #17251e; color: #dff5de; }
+    .json-panel[hidden] { display: none; }
+    .json-panel pre { max-height: 240px; margin: 0; overflow: auto; font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .note { margin: 18px 0 0; color: #7b867e; font-size: 11px; line-height: 1.5; }
+    footer { display: flex; justify-content: space-between; gap: 16px; padding: 22px 0 30px; border-top: 1px solid var(--line); color: #7b867e; font-size: 11px; }
+    a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #47815d; outline-offset: 3px; }
+    @media (max-width: 720px) {
+      main { padding-top: 48px; }
+      .intro { align-items: start; flex-direction: column; gap: 14px; }
+      .intro-copy { max-width: 410px; }
+      .converter { padding: 20px; }
+      .money-row { grid-template-columns: 1fr; gap: 10px; }
+      .swap-button { justify-self: center; transform: rotate(90deg); }
+      .swap-button:hover { transform: rotate(270deg); }
+      .money-box { padding: 16px; }
+      .pair-list { grid-template-columns: repeat(2, 1fr); }
+      .currency-select { max-width: 130px; }
+    }
+    @media (max-width: 400px) {
+      .shell { width: min(100% - 28px, 1100px); }
+      .converter { padding: 16px; border-radius: 19px; }
+      .live { font-size: 10px; }
+      .actions { align-items: stretch; flex-direction: column-reverse; }
+      .json-button { align-self: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Change home"><span class="brand-mark">↗</span><span>change</span></a>
+      <span class="top-label">A little more clarity for your money</span>
+    </header>
+
+    <main id="top">
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Currency converter · simple by design</p>
+          <h1 id="page-title">Your money,<br />translated.</h1>
+        </div>
+        <p class="intro-copy">Use the reference rates below to see what your money is worth in another currency.</p>
+      </section>
+
+      <section class="converter" aria-labelledby="converter-title">
+        <div class="converter-head">
+          <h2 id="converter-title">Convert currency</h2>
+          <span class="live"><span class="live-dot" aria-hidden="true"></span><span id="live-label">Illustrative reference rates</span></span>
+        </div>
+
+        <div class="money-row">
+          <label class="money-box" for="from-amount">
+            <span class="field-label">You send</span>
+            <span class="input-line">
+              <input class="amount-input" id="from-amount" type="number" min="0" step="any" value="100" inputmode="decimal" aria-label="Amount to convert" />
+              <select class="currency-select" id="from-currency" aria-label="Currency to convert from"></select>
+            </span>
+            <span class="currency-name" id="from-name"></span>
+          </label>
+
+          <button class="swap-button" id="swap-button" type="button" aria-label="Swap currencies" title="Swap currencies">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg>
+          </button>
+
+          <label class="money-box" for="to-amount">
+            <span class="field-label">They receive</span>
+            <span class="input-line">
+              <input class="amount-input" id="to-amount" type="text" value="—" readonly aria-label="Converted amount" />
+              <select class="currency-select" id="to-currency" aria-label="Currency to convert to"></select>
+            </span>
+            <span class="currency-name" id="to-name"></span>
+          </label>
+        </div>
+
+        <div class="rate-strip">
+          <span class="rate-text" id="rate-text">Choose currencies to see the conversion rate.</span>
+          <span class="rate-date" id="rate-date"></span>
+        </div>
+        <div class="actions">
+          <button class="json-button" id="json-button" type="button" aria-expanded="false">View conversion data (JSON)</button>
+          <button class="refresh-button" id="refresh-button" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6.5L20 12M4 12l2 5.5A7 7 0 0 0 18.4 15"/></svg>
+            Recalculate
+          </button>
+        </div>
+        <div class="json-panel" id="json-panel" hidden><pre id="json-output"></pre></div>
+      </section>
+
+      <section aria-labelledby="quick-title">
+        <div class="section-row"><h2 id="quick-title">Quick conversions</h2><p>Tap a pair to load it into the converter</p></div>
+        <div class="pair-list" id="pair-list"></div>
+      </section>
+
+      <p class="status" id="status" role="status" aria-live="polite">Enter an amount and choose a currency pair.</p>
+      <p class="note">These illustrative reference rates are built into the page and may differ from current market rates or the rates offered by banks and exchange services.</p>
+    </main>
+
+    <footer><span>Currency, made clearer.</span><span>Illustrative reference rates</span></footer>
+  </div>
+
+  <script>
+    const currencies = [
+      { code: "CAD", name: "Canadian Dollar", symbol: "$" },
+      { code: "USD", name: "US Dollar", symbol: "$" },
+      { code: "EUR", name: "Euro", symbol: "€" },
+      { code: "GBP", name: "British Pound", symbol: "£" },
+      { code: "JPY", name: "Japanese Yen", symbol: "¥" },
+      { code: "AUD", name: "Australian Dollar", symbol: "$" },
+      { code: "CHF", name: "Swiss Franc", symbol: "Fr" },
+      { code: "MXN", name: "Mexican Peso", symbol: "$" }
+    ];
+
+    const quickPairs = [
+      { from: "CAD", to: "USD" },
+      { from: "CAD", to: "EUR" },
+      { from: "USD", to: "JPY" },
+      { from: "GBP", to: "CAD" }
+    ];
+
+    const usdPerUnit = { CAD: 0.74, USD: 1, EUR: 1.08, GBP: 1.27, JPY: 0.0068, AUD: 0.66, CHF: 1.12, MXN: 0.058 };
+
+    const fromAmount = document.querySelector("#from-amount");
+    const toAmount = document.querySelector("#to-amount");
+    const fromCurrency = document.querySelector("#from-currency");
+    const toCurrency = document.querySelector("#to-currency");
+    const fromName = document.querySelector("#from-name");
+    const toName = document.querySelector("#to-name");
+    const rateText = document.querySelector("#rate-text");
+    const rateDate = document.querySelector("#rate-date");
+    const liveLabel = document.querySelector("#live-label");
+    const status = document.querySelector("#status");
+    const pairList = document.querySelector("#pair-list");
+    const refreshButton = document.querySelector("#refresh-button");
+    const jsonButton = document.querySelector("#json-button");
+    const jsonPanel = document.querySelector("#json-panel");
+    const jsonOutput = document.querySelector("#json-output");
+
+    let currentRate = null;
+
+    function buildCurrencySelect(select, selectedCode) {
+      currencies.forEach((currency) => {
+        const option = document.createElement("option");
+        option.value = currency.code;
+        option.textContent = `${currency.code} · ${currency.name}`;
+        option.selected = currency.code === selectedCode;
+        select.appendChild(option);
+      });
+    }
+
+    buildCurrencySelect(fromCurrency, "CAD");
+    buildCurrencySelect(toCurrency, "USD");
+
+    function currencyFor(code) {
+      return currencies.find((currency) => currency.code === code);
+    }
+
+    function formatMoney(value, currencyCode) {
+      if (!Number.isFinite(value)) return "—";
+      try {
+        return new Intl.NumberFormat(undefined, {
+          style: "currency",
+          currency: currencyCode,
+          maximumFractionDigits: currencyCode === "JPY" ? 0 : 2
+        }).format(value);
+      } catch {
+        return `${value.toFixed(2)} ${currencyCode}`;
+      }
+    }
+
+    function updateNames() {
+      fromName.textContent = currencyFor(fromCurrency.value)?.name || fromCurrency.value;
+      toName.textContent = currencyFor(toCurrency.value)?.name || toCurrency.value;
+    }
+
+    function updateConversion() {
+      updateNames();
+      const amount = Number(fromAmount.value);
+      if (currentRate === null || fromAmount.value.trim() === "" || !Number.isFinite(amount)) {
+        toAmount.value = "—";
+        return;
+      }
+      toAmount.value = formatMoney(amount * currentRate, toCurrency.value);
+    }
+
+    function displayQuickPairs() {
+      pairList.innerHTML = "";
+      quickPairs.forEach((pair) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "pair-card";
+        card.dataset.from = pair.from;
+        card.dataset.to = pair.to;
+        const rate = usdPerUnit[pair.from] / usdPerUnit[pair.to];
+        card.innerHTML = `
+          <span class="pair-codes">${pair.from} <span aria-hidden="true">→</span> ${pair.to}</span>
+          <span class="pair-rate">${rate.toLocaleString(undefined, { maximumFractionDigits: 4 })}</span>
+          <span class="pair-caption">1 ${pair.from} in ${pair.to}</span>
+        `;
+        pairList.appendChild(card);
+      });
+    }
+
+    function convertCurrencies() {
+      const from = fromCurrency.value;
+      const to = toCurrency.value;
+      const amount = Number(fromAmount.value);
+      const hasAmount = fromAmount.value.trim() !== "" && Number.isFinite(amount);
+      currentRate = from === to ? 1 : usdPerUnit[from] / usdPerUnit[to];
+      updateConversion();
+      rateText.innerHTML = `1 ${from} = <strong>${currentRate.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${to}</strong>`;
+      rateDate.textContent = "Illustrative reference rate";
+      liveLabel.textContent = "Example rates";
+      status.textContent = hasAmount
+        ? `${formatMoney(amount, from)} converts to ${formatMoney(amount * currentRate, to)} using the reference rate.`
+        : "Enter an amount to see the converted value.";
+      jsonOutput.textContent = JSON.stringify({
+        currencies,
+        usdPerUnit,
+        conversion: { amount: hasAmount ? amount : null, base: from, quote: to, rate: currentRate, result: hasAmount ? amount * currentRate : null }
+      }, null, 2);
+    }
+
+    // Build cards from data, then add one listener to the containing element.
+    displayQuickPairs();
+    pairList.addEventListener("click", (event) => {
+      const card = event.target.closest(".pair-card");
+      if (!card) return;
+      fromCurrency.value = card.dataset.from;
+      toCurrency.value = card.dataset.to;
+      convertCurrencies();
+    });
+
+    fromCurrency.addEventListener("change", convertCurrencies);
+    toCurrency.addEventListener("change", convertCurrencies);
+    fromAmount.addEventListener("input", convertCurrencies);
+    refreshButton.addEventListener("click", convertCurrencies);
+    document.querySelector("#swap-button").addEventListener("click", () => {
+      const previousFrom = fromCurrency.value;
+      fromCurrency.value = toCurrency.value;
+      toCurrency.value = previousFrom;
+      convertCurrencies();
+    });
+
+    jsonButton.addEventListener("click", () => {
+      const isOpening = jsonPanel.hidden;
+      jsonPanel.hidden = !isOpening;
+      jsonButton.setAttribute("aria-expanded", String(isOpening));
+      jsonButton.textContent = isOpening ? "Hide conversion data" : "View conversion data (JSON)";
+    });
+
+    convertCurrencies();
+  </script>
+</body>
+</html>
